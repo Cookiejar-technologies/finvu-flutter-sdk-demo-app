@@ -1,0 +1,34 @@
+PODS:
+  - finvu_flutter_sdk (0.0.1):
+    - FinvuSDK (~> 1.0.3)
+    - Flutter
+  - FinvuSDK (1.0.4)
+  - Flutter (1.0.0)
+
+DEPENDENCIES:
+  - finvu_flutter_sdk (from `.symlinks/plugins/finvu_flutter_sdk/ios`)
+  - FinvuSDK (from `https://github.com/Cookiejar-technologies/finvu_ios_sdk.git`, tag `1.0.4`)
+  - Flutter (from `Flutter`)
+
+EXTERNAL SOURCES:
+  finvu_flutter_sdk:
+    :path: ".symlinks/plugins/finvu_flutter_sdk/ios"
+  FinvuSDK:
+    :git: https://github.com/Cookiejar-technologies/finvu_ios_sdk.git
+    :tag: 1.0.4
+  Flutter:
+    :path: Flutter
+
+CHECKOUT OPTIONS:
+  FinvuSDK:
+    :git: https://github.com/Cookiejar-technologies/finvu_ios_sdk.git
+    :tag: 1.0.4
+
+SPEC CHECKSUMS:
+  finvu_flutter_sdk: e6490d8fb0cae2673bc84d0b849d272f97762181
+  FinvuSDK: 7f28f6f142535d00929477257d160fc64be2bb72
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+
+PODFILE CHECKSUM: 2ad036956b48ea94700b442ce205893318435e43
+
+COCOAPODS: 1.16.2
