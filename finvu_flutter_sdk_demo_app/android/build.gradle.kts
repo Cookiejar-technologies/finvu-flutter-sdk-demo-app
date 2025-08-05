@@ -2,6 +2,13 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url = uri("https://maven.pkg.github.com/Cookiejar-technologies/finvu_android_sdk")
+            credentials {
+                username = ""
+                password = ""
+            }
+        }
     }
 }
 
