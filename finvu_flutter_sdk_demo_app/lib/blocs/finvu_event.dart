@@ -44,11 +44,13 @@ class LoginWithCredentials extends FinvuEvent {
 class VerifyOtp extends FinvuEvent {
   final String otp;
   final String otpReference;
+  final String? consentHandleId;
 
-  const VerifyOtp({required this.otp, required this.otpReference});
+  const VerifyOtp(
+      {required this.otp, required this.otpReference, this.consentHandleId});
 
   @override
-  List<Object?> get props => [otp, otpReference];
+  List<Object?> get props => [otp, otpReference, consentHandleId];
 }
 
 class FetchLinkedAccounts extends FinvuEvent {}

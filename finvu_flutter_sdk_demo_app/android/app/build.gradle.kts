@@ -24,8 +24,8 @@ android {
         applicationId = "com.example.finvu_flutter_sdk_demo_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 24
-        targetSdk = flutter.targetSdkVersion
+        minSdk = 25
+        targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -38,6 +38,13 @@ android {
         }
     }
 }
+
+// TODO: Uncomment this when the sna-adapter need to be used for sna authentication
+// dependencies {
+//     implementation("com.finvu.android:sna-adapter:1.0.2")
+// }
+
+
 
 flutter {
     source = "../.."
