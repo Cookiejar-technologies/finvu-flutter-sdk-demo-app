@@ -102,6 +102,7 @@ class FinvuBloc extends Bloc<FinvuEvent, FinvuState> {
     if (result.isSuccess) {
       if (result.data?.authType == "SNA") {
         add(VerifyOtp(
+            mobileNumber: event.mobileNumber,
             otp: result.data?.snaToken ?? "",
             otpReference: result.data?.reference ?? "",
             consentHandleId: event.consentHandleId));
@@ -135,7 +136,7 @@ class FinvuBloc extends Bloc<FinvuEvent, FinvuState> {
     if (!(state as FinvuConnected).isConnected) return;
 
     final currentState = state as FinvuConnected;
-    emit(currentState.copyWith(message: 'Verifying OTP...', isLoading: true));
+    emit(currentState.copyWith(message: 'Verifying...', isLoading: true));
 
     final result =
         await _finvuAAManager.verifyLoginOtp(event.otp, event.otpReference);
@@ -144,8 +145,9 @@ class FinvuBloc extends Bloc<FinvuEvent, FinvuState> {
         isLoading: false,
         isLoggedIn: true,
         userId: result.data?.userId,
-        message: 'OTP Verified. User ID: ${result.data?.userId}',
+        message: 'Verified. User ID: ${result.data?.userId}',
         consentHandleId: event.consentHandleId,
+        mobileNumber: event.mobileNumber,
       ));
     } else {
       emit(currentState.copyWith(
