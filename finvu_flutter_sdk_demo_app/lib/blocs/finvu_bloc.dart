@@ -87,7 +87,11 @@ class FinvuBloc extends Bloc<FinvuEvent, FinvuState> {
       LoginWithCredentials event, Emitter<FinvuState> emit) async {
     if (state is! FinvuConnected) return;
 
-    emit(const FinvuLoading('Logging in...', true));
+    emit(const FinvuConnected(
+        isLoading: true,
+        message: 'Logging in...',
+        isConnected: true,
+        isLoggedIn: false));
 
     final result = await _finvuAAManager.loginWithUsernameOrMobileNumber(
       event.userHandle,
@@ -96,16 +100,24 @@ class FinvuBloc extends Bloc<FinvuEvent, FinvuState> {
     );
 
     if (result.isSuccess) {
-      emit(FinvuConnected(
-        isLoading: false,
-        otpReference: result.data?.reference,
-        mobileNumber: event.mobileNumber,
-        userHandle: event.userHandle,
-        consentHandleId: event.consentHandleId,
-        message: 'Otp verification required',
-        isConnected: true,
-        isLoggedIn: false,
-      ));
+      if (result.data?.authType == "SNA") {
+        add(VerifyOtp(
+            mobileNumber: event.mobileNumber,
+            otp: result.data?.snaToken ?? "",
+            otpReference: result.data?.reference ?? "",
+            consentHandleId: event.consentHandleId));
+      } else {
+        emit(FinvuConnected(
+          isLoading: false,
+          otpReference: result.data?.reference,
+          mobileNumber: event.mobileNumber,
+          userHandle: event.userHandle,
+          consentHandleId: event.consentHandleId,
+          message: 'Otp verification required',
+          isConnected: true,
+          isLoggedIn: false,
+        ));
+      }
     } else {
       emit(FinvuConnected(
         isLoading: false,
@@ -121,10 +133,10 @@ class FinvuBloc extends Bloc<FinvuEvent, FinvuState> {
   }
 
   Future<void> _onVerifyOtp(VerifyOtp event, Emitter<FinvuState> emit) async {
-    if (state is! FinvuConnected) return;
+    if (!(state as FinvuConnected).isConnected) return;
 
     final currentState = state as FinvuConnected;
-    emit(currentState.copyWith(message: 'Verifying OTP...', isLoading: true));
+    emit(currentState.copyWith(message: 'Verifying...', isLoading: true));
 
     final result =
         await _finvuAAManager.verifyLoginOtp(event.otp, event.otpReference);
@@ -133,7 +145,9 @@ class FinvuBloc extends Bloc<FinvuEvent, FinvuState> {
         isLoading: false,
         isLoggedIn: true,
         userId: result.data?.userId,
-        message: 'OTP Verified. User ID: ${result.data?.userId}',
+        message: 'Verified. User ID: ${result.data?.userId}',
+        consentHandleId: event.consentHandleId,
+        mobileNumber: event.mobileNumber,
       ));
     } else {
       emit(currentState.copyWith(

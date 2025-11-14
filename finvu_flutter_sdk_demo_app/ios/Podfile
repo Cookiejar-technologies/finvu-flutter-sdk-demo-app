@@ -32,7 +32,10 @@ target 'Runner' do
   use_modular_headers!
 
   platform :ios, '17.0'
-  pod 'FinvuSDK' , :git => 'https://github.com/Cookiejar-technologies/finvu_ios_sdk.git', :tag => '1.0.4'
+  pod 'FinvuSDK' , :git => 'https://github.com/Cookiejar-technologies/finvu_ios_sdk.git', :tag => '1.0.8'
+  # TODO: Uncomment this when the sna-adapter need to be used for sna authentication
+  # pod 'FinvuSDKSNAAdapter', :git => 'https://github.com/Cookiejar-technologies/finvu-ios-sdk-sna-adapter.git', :tag => '1.0.1'
+
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do

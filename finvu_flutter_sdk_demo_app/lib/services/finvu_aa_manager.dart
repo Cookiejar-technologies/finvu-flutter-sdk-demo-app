@@ -57,7 +57,8 @@ class FinvuAAManager {
     try {
       final finvuAAConfig = FinvuConfig(
           finvuEndpoint: config.finvuEndpoint,
-          certificatePins: config.certificatePins);
+          certificatePins: config.certificatePins,
+          finvuSnaAuthConfig: config.finvuSnaAuthConfig);
       _finvuManager.initialize(finvuAAConfig);
       _isInitialized = true;
       return FinvuResult.success('Initialized successfully');

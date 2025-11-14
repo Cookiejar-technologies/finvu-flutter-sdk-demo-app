@@ -18,20 +18,22 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => FinvuBloc(),
-      child: MaterialApp(
-        title: 'Finvu Flutter SDK Demo',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
+      child: SafeArea(
+        child: MaterialApp(
+          title: 'Finvu Flutter SDK Demo',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+            useMaterial3: true,
+          ),
+          initialRoute: Routes.home,
+          routes: {
+            Routes.home: (context) => const HomePage(),
+            Routes.discoverAccounts: (context) => const DiscoverAccountsPage(),
+            Routes.linkedAccounts: (context) => const LinkedAccountsPage(),
+            Routes.discoveredAccounts: (context) =>
+                const DiscoveredAccountsPage(),
+          },
         ),
-        initialRoute: Routes.home,
-        routes: {
-          Routes.home: (context) => const HomePage(),
-          Routes.discoverAccounts: (context) => const DiscoverAccountsPage(),
-          Routes.linkedAccounts: (context) => const LinkedAccountsPage(),
-          Routes.discoveredAccounts: (context) =>
-              const DiscoveredAccountsPage(),
-        },
       ),
     );
   }

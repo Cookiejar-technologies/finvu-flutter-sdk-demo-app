@@ -91,9 +91,10 @@ class _HomePageState extends State<HomePage> {
                           ? null
                           : () {
                               final config = FinvuConfig(
-                                finvuEndpoint:
-                                    'wss://webvwdev.finvu.in/consentapi',
-                              );
+                                  finvuEndpoint:
+                                      'wss://webvwdev.finvu.in/consentapiv2',
+                                  finvuSnaAuthConfig: FinvuSnaAuthConfig(
+                                      environment: FinvuEnv.uat));
                               context
                                   .read<FinvuBloc>()
                                   .add(InitializeSDK(config));
@@ -310,13 +311,11 @@ class _HomePageState extends State<HomePage> {
                       ),
                       const SizedBox(height: 8),
                       ElevatedButton(
-                        onPressed: state.consentHandleId?.isEmpty != false ||
-                                state is FinvuLoading
-                            ? null
-                            : () {
-                                context.read<FinvuBloc>().add(
-                                    GetConsentDetails(state.consentHandleId!));
-                              },
+                        onPressed: () {
+                          context
+                              .read<FinvuBloc>()
+                              .add(GetConsentDetails(state.consentHandleId!));
+                        },
                         child: const Text('Fetch Consent Details'),
                       ),
                       if (state.consentDetails != null) ...[
