@@ -36,9 +36,9 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     // Set default values like React Native context
-    _mobileNumberController.text = 'mobile_number';
-    _userHandleController.text = 'user_handle';
-    _consentHandleController.text = 'consent_handle';
+    _mobileNumberController.text = '';
+    _userHandleController.text = '';
+    _consentHandleController.text = '';
   }
 
   @override
