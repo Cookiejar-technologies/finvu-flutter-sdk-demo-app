@@ -1,13 +1,61 @@
+import 'dart:developer';
+
+import 'package:finvu_flutter_sdk/finvu_event_definition.dart';
 import 'package:finvu_flutter_sdk_demo_app/blocs/finvu_event.dart';
 import 'package:finvu_flutter_sdk_demo_app/blocs/finvu_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../services/finvu_aa_manager.dart' hide FinvuEvent, FinvuError;
+import '../services/finvu_aa_manager.dart' hide FinvuError;
+import 'package:finvu_flutter_sdk/finvu_event.dart' as sdk;
+import 'package:finvu_flutter_sdk/finvu_event_listener.dart';
 
 // Bloc
 class FinvuBloc extends Bloc<FinvuEvent, FinvuState> {
   final FinvuAAManager _finvuAAManager = FinvuAAManager();
+  final _SdkEventListener _sdkEventListener = _SdkEventListener();
 
   FinvuBloc() : super(FinvuInitial()) {
+    // Set up SDK event listener
+    _sdkEventListener._bloc = this;
+    _finvuAAManager.addEventListener(_sdkEventListener);
+    _finvuAAManager.setEventsEnabled(true);
+
+    // Register custom events
+    final customEvents = {
+      'CUSTOM_BUTTON_CLICKED': FinvuEventDefinition(
+        category: 'ui',
+        stage: 'interaction',
+      ),
+      'CUSTOM_API_CALLED': FinvuEventDefinition(
+        category: 'api',
+        stage: 'request',
+      ),
+      'CUSTOM_FIP_SELECTED': FinvuEventDefinition(
+        category: 'ui',
+        fipId: 'FIP123',
+        fips: ['FIP123', 'FIP456'],
+        fiTypes: ['DEPOSIT', 'SAVINGS'],
+      ),
+    };
+
+    _finvuAAManager.registerCustomEvents(customEvents);
+    log('Custom events registered successfully');
+
+    // Register aliases for standard events
+    final aliases = {
+      'LOGIN_OTP_GENERATED': 'otp_sent',
+      'WEBSOCKET_CONNECTED': 'connection_established',
+      'LOGIN_INITIATED': 'user_login_started',
+      'LOGIN_OTP_FAILED': 'otp_verification_failed',
+    };
+
+    _finvuAAManager.registerAliases(aliases);
+    log('Event aliases registered successfully');
+
+    _finvuAAManager.track('CUSTOM_BUTTON_CLICKED', {
+      'buttonId': 'submit_button',
+      'action': 'submit_form',
+    });
+
     on<InitializeSDK>(_onInitializeSDK);
     on<ConnectToService>(_onConnectToService);
     on<DisconnectFromService>(_onDisconnectFromService);
@@ -27,6 +75,39 @@ class FinvuBloc extends Bloc<FinvuEvent, FinvuState> {
     on<ClearDiscoveredAccounts>(_onClearDiscoveredAccounts);
   }
 
+  // Example: Track custom events
+  void trackCustomEvents() {
+    // Track a custom event (must be registered first)
+    _finvuAAManager.track('CUSTOM_BUTTON_CLICKED', {
+      'buttonId': 'login_button',
+      'screen': 'login_screen',
+      'timestamp': DateTime.now().toIso8601String(),
+    });
+
+    // Track another custom event
+    _finvuAAManager.track('CUSTOM_API_CALLED', {
+      'endpoint': '/api/consent',
+      'method': 'POST',
+      'status': 'success',
+    });
+
+    // Track a standard event with custom params
+    _finvuAAManager.track('WEBSOCKET_CONNECTED', {
+      'connectionTime': '150ms',
+      'retryCount': 0,
+    });
+
+    print('Custom events tracked');
+  }
+
+  @override
+  Future<void> close() {
+    // Clean up event listener when bloc is closed
+    _finvuAAManager.removeEventListener();
+    _finvuAAManager.setEventsEnabled(false);
+    return super.close();
+  }
+
   Future<void> _onInitializeSDK(
       InitializeSDK event, Emitter<FinvuState> emit) async {
     emit(const FinvuLoading('Initializing SDK...', true));
@@ -39,9 +120,7 @@ class FinvuBloc extends Bloc<FinvuEvent, FinvuState> {
         message: 'SDK initialized successfully',
         isConnected: false,
         isLoggedIn: false,
-        mobileNumber: event.config.finvuEndpoint.contains('mobile')
-            ? 'mobile_number'
-            : null,
+        mobileNumber: event.config.finvuEndpoint.contains('mobile') ? '' : null,
       ));
     } else {
       emit(FinvuError(result.error?.message ?? 'Initialization failed', false));
@@ -394,5 +473,46 @@ class FinvuBloc extends Bloc<FinvuEvent, FinvuState> {
         discoveredAccounts: [],
         message: 'Ready to discover accounts',
         isLoading: false));
+  }
+
+  // Internal method to handle SDK events and update state
+  // Note: This is called from the event listener, so we need to use add() to dispatch events
+  void _handleSdkEvent(sdk.FinvuEvent event) {
+    // Log all SDK events
+    // State updates will happen through normal BLoC event handlers
+    // This method can be used to add custom BLoC events based on SDK events if needed
+
+    switch (event.eventName) {
+      case 'SESSION_ERROR':
+      case 'SESSION_FAILURE':
+        // For critical errors, we could add a custom BLoC event
+        // For now, just log - the error will be caught by existing handlers
+        final error = event.getParam<String>('error');
+        print('Critical SDK Error: $error');
+        break;
+
+      default:
+        // All other events are logged and handled by existing BLoC handlers
+        break;
+    }
+  }
+}
+
+/// Internal SDK event listener that forwards events to the BLoC
+class _SdkEventListener implements FinvuEventListener {
+  FinvuBloc? _bloc;
+
+  @override
+  void onEvent(sdk.FinvuEvent event) {
+    // Log the event
+    print('SDK Event: ${event.eventName}');
+    print('   Category: ${event.eventCategory}');
+    print('   Timestamp: ${event.timestamp}');
+    if (event.params.isNotEmpty) {
+      print('   Params: ${event.params}');
+    }
+
+    // Forward to BLoC to update state if needed
+    _bloc?._handleSdkEvent(event);
   }
 }
