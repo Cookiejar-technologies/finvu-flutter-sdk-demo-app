@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:finvu_flutter_sdk/finvu_config.dart';
+import 'package:finvu_flutter_sdk/finvu_event_definition.dart';
 import 'package:finvu_flutter_sdk/finvu_manager.dart';
+import 'package:finvu_flutter_sdk/finvu_event_listener.dart';
 import 'package:finvu_flutter_sdk_core/finvu_consent_info.dart';
 import 'package:finvu_flutter_sdk_core/finvu_discovered_accounts.dart';
 import 'package:finvu_flutter_sdk_core/finvu_fip_details.dart';
@@ -34,13 +36,6 @@ class FinvuError {
   final String? code;
 
   const FinvuError({required this.message, this.code});
-}
-
-class FinvuEvent {
-  final String type;
-  final Map<String, dynamic> data;
-
-  const FinvuEvent({required this.type, required this.data});
 }
 
 class FinvuAAManager {
@@ -282,5 +277,56 @@ class FinvuAAManager {
     } catch (error) {
       return FinvuResult.failure(FinvuError(message: error.toString()));
     }
+  }
+
+  // Event listener methods
+  /// Add an event listener to receive SDK events
+  ///
+  /// [listener] The event listener implementation
+  void addEventListener(FinvuEventListener listener) {
+    _finvuManager.addEventListener(listener);
+  }
+
+  /// Remove the event listener
+  void removeEventListener() {
+    _finvuManager.removeEventListener();
+  }
+
+  /// Enable or disable event tracking
+  ///
+  /// Events are disabled by default. You must call this with [enabled] = true
+  /// to start tracking events, even if listeners are added.
+  void setEventsEnabled(bool enabled) {
+    _finvuManager.setEventsEnabled(enabled);
+  }
+
+  /// Register custom events
+  ///
+  /// Custom events allow you to track events specific to your app.
+  /// They follow the same structure as standard events.
+  ///
+  /// [events] Map of event name to EventDefinition
+  void registerCustomEvents(Map<String, FinvuEventDefinition> events) {
+    _finvuManager.registerCustomEvents(events);
+  }
+
+  /// Register event aliases
+  ///
+  /// Aliases allow you to use custom names for standard events.
+  /// Useful for analytics or when integrating with third-party tools.
+  ///
+  /// [aliases] Map of standard event name to alias
+  void registerAliases(Map<String, String> aliases) {
+    _finvuManager.registerAliases(aliases);
+  }
+
+  /// Manually track an event
+  ///
+  /// Use this to track custom events or manually trigger standard events.
+  ///
+  /// [eventName] The name of the event to track
+  /// [params] Optional parameters to include with the event
+  void track(String eventName, [Map<String, dynamic>? params]) {
+    _finvuManager.track(eventName, params);
   }
 }

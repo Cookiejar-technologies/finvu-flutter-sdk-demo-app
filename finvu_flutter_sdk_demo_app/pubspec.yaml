@@ -17,12 +17,12 @@ dependencies:
     git:
       url: https://github.com/Cookiejar-technologies/finvu_flutter_sdk.git
       path: client
-      ref: 1.0.4                                    
+      ref: 1.0.5                         
   finvu_flutter_sdk_core:
     git:
       url: https://github.com/Cookiejar-technologies/finvu_flutter_sdk.git
       path: core
-      ref: 1.0.4
+      ref: 1.0.5
 
 dev_dependencies:
   flutter_test:

@@ -32,7 +32,7 @@ target 'Runner' do
   use_modular_headers!
 
   platform :ios, '17.0'
-  pod 'FinvuSDK' , :git => 'https://github.com/Cookiejar-technologies/finvu_ios_sdk.git', :tag => '1.0.4'
+  pod 'FinvuSDK' , :git => 'https://github.com/Cookiejar-technologies/finvu_ios_sdk.git', :tag => '1.0.5'
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
