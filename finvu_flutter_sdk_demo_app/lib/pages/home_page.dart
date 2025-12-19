@@ -36,9 +36,9 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     // Set default values like React Native context
-    _mobileNumberController.text = '';
-    _userHandleController.text = '';
-    _consentHandleController.text = '';
+    _mobileNumberController.text = '8830751044';
+    _userHandleController.text = '8830751044@finvu';
+    _consentHandleController.text = '83bbf206-b82b-45a8-b1d3-b0f370bb094a';
   }
 
   @override
@@ -228,6 +228,10 @@ class _HomePageState extends State<HomePage> {
                                 context.read<FinvuBloc>().add(VerifyOtp(
                                       otp: _otpController.text,
                                       otpReference: state.otpReference!,
+                                      consentHandleId: state.consentHandleId ??
+                                          _consentHandleController.text,
+                                      mobileNumber: state.mobileNumber ??
+                                          _mobileNumberController.text,
                                     ));
                               },
                         child: const Text('Verify OTP'),

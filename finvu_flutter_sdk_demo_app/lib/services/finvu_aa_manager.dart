@@ -214,6 +214,25 @@ class FinvuAAManager {
     }
   }
 
+  // Get consent handle status
+  Future<FinvuResult<dynamic>> getConsentHandleStatus(
+    String consentHandleId,
+  ) async {
+    try {
+      if (!_isConnected) {
+        return FinvuResult.failure(
+            const FinvuError(message: 'Not connected to service'));
+      }
+
+      final result =
+          await _finvuManager.getConsentHandleStatus(consentHandleId);
+
+      return FinvuResult.success(result);
+    } catch (error) {
+      return _handleError<dynamic>(error, 'getConsentHandleStatus');
+    }
+  }
+
   // Approve consent request
   Future<FinvuResult<FinvuProcessConsentRequestResponse>> approveConsentRequest(
     FinvuConsentRequestDetailInfo consentDetail,
