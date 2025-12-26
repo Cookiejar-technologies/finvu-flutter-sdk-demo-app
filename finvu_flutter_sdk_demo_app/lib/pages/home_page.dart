@@ -228,6 +228,10 @@ class _HomePageState extends State<HomePage> {
                                 context.read<FinvuBloc>().add(VerifyOtp(
                                       otp: _otpController.text,
                                       otpReference: state.otpReference!,
+                                      consentHandleId: state.consentHandleId ??
+                                          _consentHandleController.text,
+                                      mobileNumber: state.mobileNumber ??
+                                          _mobileNumberController.text,
                                     ));
                               },
                         child: const Text('Verify OTP'),

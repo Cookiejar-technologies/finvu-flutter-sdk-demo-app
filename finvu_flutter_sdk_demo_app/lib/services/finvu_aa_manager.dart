@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:finvu_flutter_sdk/finvu_config.dart';
 import 'package:finvu_flutter_sdk/finvu_event_definition.dart';
@@ -47,6 +48,40 @@ class FinvuAAManager {
   bool _isInitialized = false;
   bool _isConnected = false;
 
+  // Helper method to handle errors
+  FinvuResult<T> _handleError<T>(dynamic error, String operation) {
+    // Check if error has code and message properties (FinvuException)
+    try {
+      final errorCode = (error as dynamic).code;
+      final errorMessage = (error as dynamic).message;
+
+      if (errorCode != null && errorMessage != null) {
+        log('Error Code: $errorCode');
+        log('Error Message: $errorMessage');
+
+        switch (errorCode.toString()) {
+          case 'F401': // Backend unauthorized
+          case 'A005': // Invalid OTP
+          case '8001': // SSL pinning failure
+            // Handle specific errors
+            break;
+        }
+
+        return FinvuResult.failure(
+          FinvuError(
+              message: errorMessage.toString(), code: errorCode.toString()),
+        );
+      }
+    } catch (_) {
+      // If error doesn't have code/message, fall through to default handling
+    }
+
+    log('Error in $operation: ${error.toString()}');
+    return FinvuResult.failure(
+      FinvuError(message: error.toString()),
+    );
+  }
+
   // Initialize SDK
   Future<FinvuResult<String>> initializeWith(FinvuConfig config) async {
     try {
@@ -58,7 +93,7 @@ class FinvuAAManager {
       _isInitialized = true;
       return FinvuResult.success('Initialized successfully');
     } catch (error) {
-      return FinvuResult.failure(FinvuError(message: error.toString()));
+      return _handleError<String>(error, 'initializeWith');
     }
   }
 
@@ -76,7 +111,7 @@ class FinvuAAManager {
 
       return FinvuResult.success('Connected successfully');
     } catch (error) {
-      return FinvuResult.failure(FinvuError(message: error.toString()));
+      return _handleError<String>(error, 'connect');
     }
   }
 
@@ -87,7 +122,7 @@ class FinvuAAManager {
       _isConnected = false;
       return FinvuResult.success('Disconnected successfully');
     } catch (error) {
-      return FinvuResult.failure(FinvuError(message: error.toString()));
+      return _handleError<String>(error, 'disconnect');
     }
   }
 
@@ -97,7 +132,7 @@ class FinvuAAManager {
       _isConnected = await _finvuManager.isConnected();
       return FinvuResult.success(_isConnected);
     } catch (error) {
-      return FinvuResult.failure(FinvuError(message: error.toString()));
+      return _handleError<bool>(error, 'isConnected');
     }
   }
 
@@ -107,7 +142,7 @@ class FinvuAAManager {
       final isAAsessionActive = await _finvuManager.hasSession();
       return FinvuResult.success(isAAsessionActive);
     } catch (error) {
-      return FinvuResult.failure(FinvuError(message: error.toString()));
+      return _handleError<bool>(error, 'hasSession');
     }
   }
 
@@ -132,7 +167,8 @@ class FinvuAAManager {
 
       return FinvuResult.success(result);
     } catch (error) {
-      return FinvuResult.failure(FinvuError(message: error.toString()));
+      return _handleError<FinvuLoginOtpReference>(
+          error, 'loginWithUsernameOrMobileNumber');
     }
   }
 
@@ -146,7 +182,7 @@ class FinvuAAManager {
           await _finvuManager.verifyLoginOtp(otp, otpReference);
       return FinvuResult.success(result);
     } catch (error) {
-      return FinvuResult.failure(FinvuError(message: error.toString()));
+      return _handleError<FinvuHandleInfo>(error, 'verifyLoginOtp');
     }
   }
 
@@ -158,7 +194,8 @@ class FinvuAAManager {
 
       return FinvuResult.success(result);
     } catch (error) {
-      return FinvuResult.failure(FinvuError(message: error.toString()));
+      return _handleError<List<FinvuLinkedAccountDetailsInfo>>(
+          error, 'fetchLinkedAccounts');
     }
   }
 
@@ -172,7 +209,27 @@ class FinvuAAManager {
 
       return FinvuResult.success(result);
     } catch (error) {
-      return FinvuResult.failure(FinvuError(message: error.toString()));
+      return _handleError<FinvuConsentRequestDetailInfo>(
+          error, 'getConsentRequestDetails');
+    }
+  }
+
+  // Get consent handle status
+  Future<FinvuResult<dynamic>> getConsentHandleStatus(
+    String consentHandleId,
+  ) async {
+    try {
+      if (!_isConnected) {
+        return FinvuResult.failure(
+            const FinvuError(message: 'Not connected to service'));
+      }
+
+      final result =
+          await _finvuManager.getConsentHandleStatus(consentHandleId);
+
+      return FinvuResult.success(result);
+    } catch (error) {
+      return _handleError<dynamic>(error, 'getConsentHandleStatus');
     }
   }
 
@@ -187,7 +244,8 @@ class FinvuAAManager {
 
       return FinvuResult.success(result);
     } catch (error) {
-      return FinvuResult.failure(FinvuError(message: error.toString()));
+      return _handleError<FinvuProcessConsentRequestResponse>(
+          error, 'approveConsentRequest');
     }
   }
 
@@ -200,7 +258,8 @@ class FinvuAAManager {
 
       return FinvuResult.success(result);
     } catch (error) {
-      return FinvuResult.failure(FinvuError(message: error.toString()));
+      return _handleError<FinvuProcessConsentRequestResponse>(
+          error, 'denyConsentRequest');
     }
   }
 
@@ -210,7 +269,7 @@ class FinvuAAManager {
       await _finvuManager.logout();
       return FinvuResult.success('Logged out successfully');
     } catch (error) {
-      return FinvuResult.failure(FinvuError(message: error.toString()));
+      return _handleError<String>(error, 'logout');
     }
   }
 
@@ -220,7 +279,7 @@ class FinvuAAManager {
       final result = await _finvuManager.fipsAllFIPOptions();
       return FinvuResult.success(result);
     } catch (error) {
-      return FinvuResult.failure(FinvuError(message: error.toString()));
+      return _handleError<List<FinvuFIPInfo>>(error, 'fipsAllFIPOptions');
     }
   }
 
@@ -232,7 +291,7 @@ class FinvuAAManager {
 
       return FinvuResult.success(result);
     } catch (error) {
-      return FinvuResult.failure(FinvuError(message: error.toString()));
+      return _handleError<FinvuFIPDetails>(error, 'fetchFipDetails');
     }
   }
 
@@ -247,7 +306,8 @@ class FinvuAAManager {
 
       return FinvuResult.success(result);
     } catch (error) {
-      return FinvuResult.failure(FinvuError(message: error.toString()));
+      return _handleError<List<FinvuDiscoveredAccountInfo>>(
+          error, 'discoverAccounts');
     }
   }
 
@@ -262,7 +322,8 @@ class FinvuAAManager {
       );
       return FinvuResult.success(result);
     } catch (error) {
-      return FinvuResult.failure(FinvuError(message: error.toString()));
+      return _handleError<FinvuAccountLinkingRequestReference>(
+          error, 'linkAccounts');
     }
   }
 
@@ -276,7 +337,8 @@ class FinvuAAManager {
 
       return FinvuResult.success(result);
     } catch (error) {
-      return FinvuResult.failure(FinvuError(message: error.toString()));
+      return _handleError<FinvuConfirmAccountLinkingInfo>(
+          error, 'confirmAccountLinking');
     }
   }
 

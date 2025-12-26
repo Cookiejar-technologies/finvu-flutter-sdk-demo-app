@@ -41,7 +41,7 @@ android {
 
 // TODO: Uncomment this when the sna-adapter need to be used for sna authentication
 // dependencies {
-//     implementation("com.finvu.android:sna-adapter:1.0.2")
+//     implementation("com.finvu.android:sna-adapter:1.0.4")
 // }
 
 

@@ -228,6 +228,25 @@ class FinvuBloc extends Bloc<FinvuEvent, FinvuState> {
         consentHandleId: event.consentHandleId,
         mobileNumber: event.mobileNumber,
       ));
+
+      // Call getConsentHandleStatus after successful login
+      log('Checking consentHandleId after login: ${event.consentHandleId}');
+      if (event.consentHandleId != null) {
+        log('Calling getConsentHandleStatus after login with ID: ${event.consentHandleId}');
+        try {
+          final statusResult = await _finvuAAManager
+              .getConsentHandleStatus(event.consentHandleId!);
+          if (statusResult.isSuccess) {
+            _logConsentHandleStatusResponse(statusResult.data, 'after login');
+          } else {
+            log('getConsentHandleStatus after login - Error: ${statusResult.error?.message}');
+          }
+        } catch (e) {
+          log('getConsentHandleStatus after login - Exception: $e');
+        }
+      } else {
+        log('consentHandleId is null after login, skipping getConsentHandleStatus');
+      }
     } else {
       emit(currentState.copyWith(
         isLoading: false,
@@ -294,6 +313,27 @@ class FinvuBloc extends Bloc<FinvuEvent, FinvuState> {
     );
 
     if (result.isSuccess) {
+      // Call getConsentHandleStatus after successful consent approval
+      final consentHandleId = currentState.consentHandleId;
+      log('Checking consentHandleId after consent approval: $consentHandleId');
+      if (consentHandleId != null) {
+        log('Calling getConsentHandleStatus after consent approval with ID: $consentHandleId');
+        try {
+          final statusResult =
+              await _finvuAAManager.getConsentHandleStatus(consentHandleId);
+          if (statusResult.isSuccess) {
+            _logConsentHandleStatusResponse(
+                statusResult.data, 'after consent approval');
+          } else {
+            log('getConsentHandleStatus after consent approval - Error: ${statusResult.error?.message}');
+          }
+        } catch (e) {
+          log('getConsentHandleStatus after consent approval - Exception: $e');
+        }
+      } else {
+        log('consentHandleId is null after consent approval, skipping getConsentHandleStatus');
+      }
+
       emit(const FinvuSuccess('Consent approved successfully', false));
       // Auto logout after 2 seconds
       Future.delayed(const Duration(seconds: 2), () {
@@ -316,6 +356,27 @@ class FinvuBloc extends Bloc<FinvuEvent, FinvuState> {
         await _finvuAAManager.denyConsentRequest(event.consentDetail);
 
     if (result.isSuccess) {
+      // Call getConsentHandleStatus after successful consent denial
+      final consentHandleId = currentState.consentHandleId;
+      log('Checking consentHandleId after consent denial: $consentHandleId');
+      if (consentHandleId != null) {
+        log('Calling getConsentHandleStatus after consent denial with ID: $consentHandleId');
+        try {
+          final statusResult =
+              await _finvuAAManager.getConsentHandleStatus(consentHandleId);
+          if (statusResult.isSuccess) {
+            _logConsentHandleStatusResponse(
+                statusResult.data, 'after consent denial');
+          } else {
+            log('getConsentHandleStatus after consent denial - Error: ${statusResult.error?.message}');
+          }
+        } catch (e) {
+          log('getConsentHandleStatus after consent denial - Exception: $e');
+        }
+      } else {
+        log('consentHandleId is null after consent denial, skipping getConsentHandleStatus');
+      }
+
       emit(const FinvuSuccess('Consent denied successfully', false));
       // Auto logout after 2 seconds
       Future.delayed(const Duration(seconds: 2), () {
@@ -473,6 +534,16 @@ class FinvuBloc extends Bloc<FinvuEvent, FinvuState> {
         discoveredAccounts: [],
         message: 'Ready to discover accounts',
         isLoading: false));
+  }
+
+  // Helper method to print response details
+  void _logConsentHandleStatusResponse(dynamic response, String context) {
+    try {
+      final status = (response as dynamic).status;
+      log('getConsentHandleStatus $context - Status: $status');
+    } catch (e) {
+      log('getConsentHandleStatus $context - Error reading status: $e');
+    }
   }
 
   // Internal method to handle SDK events and update state
